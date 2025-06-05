@@ -1,110 +1,386 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-    <!-- Font Awesome -->
-<link
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
-rel="stylesheet"
-/>
-<!-- Google Fonts -->
-<link
-href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
-rel="stylesheet"
-/>
-<!-- MDB -->
-<link
-href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.1/mdb.min.css"
-rel="stylesheet"
-/>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <title>Editor</title>
-    <link rel="icon" href="aTMLLVVZ_400x400.jpg">
-    <link rel="stylesheet" href="style.css">
-   
+    <title>جدول المواد</title>
+    <style>
+        body {
+            direction: ltr;
+            font-family: Arial, sans-serif;
+            padding-left: 200px;
+            padding-right: 200px;
+            padding-top: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #999;
+            padding: 5px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .negative {
+            background-color: red;
+            color: white;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-top: 20px;
+            font-family: monospace;
+        }
+        .bt{
+            margin: auto;
+            width: 50%;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: rgb(130, 224, 114);
+            width: 100%;
+            font-size: 20px;
+            
+        }
+    </style>
 </head>
 <body>
-     <!-- Image and text -->
-     <nav class="navbar navbar-dark bg-primary">
-        <div class="container-fluid">
-          <a class="navbar-brand" href="#">
-            <img src="photo_2021-11-22_20-32-22.jpg" alt="" width="30"  class="d-inline-block align-text-top">
-            Dr.Hassan/Editor
-          </a>
-        </div>
-      </nav>
 
-  <main>
-    <textarea class="text" id="codes">
-        <!DOCTYPE html>
-    <html lang="ar">
-    <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Editor</title>
-    
-    <style></style>
-    
-    </head>    
-    <body>
-   
-    
-    <script></script>
-    
-    </body>
-    </html>
-        
-    </textarea>
-    
-    <div id="buttons">
-        <button class="btn btn-danger" id="remove"> حذف الأكواد</button>
-        <button class="btn btn-success" id="play"> تشغيل الأكواد </button>
-    </div>
-    <div>
-        <p id="title-result">Result - النتيجة</p>
-    </div>
-    
-    <div id="result"></div>
-  </main>
-  
-  <footer class="text-center text-white" style="background-color: #0a4275;">
-    <!-- Grid container -->
-    <div class="container p-4 pb-0">
-      <!-- Section: Social media -->
-      <section class="mb-4">
-        <!-- Facebook -->
-        <a class="btn btn-outline-light btn-floating m-1" href="https://www.facebook.com/profile.php?id=100037477488127" role="button"
-          ><i class="fab fa-facebook-f"></i
-        ></a>
-  
-        <!-- Twitter -->
-        <a class="btn btn-outline-light btn-floating m-1" href="#!" role="button"
-          ><i class="fab fa-twitter"></i
-        ></a>
+    <h2>Таблица материалов</h2>
 
-        <!-- Instagram -->
-        <a class="btn btn-outline-light btn-floating m-1" href="https://www.instagram.com/dentist_hass/" role="button"
-          ><i class="fab fa-instagram"></i
-        ></a>
-  
-      </section>
-      <!-- Section: Social media -->
-    </div>
-    <!-- Grid container -->
-  
-    <!-- Copyright -->
-    <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
-      © 2021 Copyright:
-      <a class="text-white" href="https://www.facebook.com/profile.php?id=100037477488127">Dr.Hassan</a>
-    </div>
-    <!-- Copyright -->
-  </footer>
+    
+<textarea id="excelInput" placeholder="Вставьте данные из Excel" ></textarea><br>
+<div class="bt">
+<button onclick="parseExcelData()"> загрузить</button>
+</div>
+<table id="dataTable">
+    <thead>
+        <tr>
+            <th>Материал</th>
+            <th>Количество факт</th>
+            <th>Количество план</th>
+            <th>Разница</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- سيتم ملء السطور ديناميكيًا -->
+    </tbody>
+</table>
 
-  <script src="js.js"></script>
-   
+<script>
+    const tableBody = document.querySelector("#dataTable tbody");
+    const rowsCount = 173;
+
+    // 🔹 قائمة أسماء المواد
+    const materialNames = [
+  "3D стикер ВЕСНА в подарок",
+  "Авокадо свежий",
+  "Ананасы консервированные резаные",
+  "Батат фри, гр",
+  "Бенто коробка 5 секц.",
+  "Блины тамаго",
+  "Бобы Эдамаме",
+  "Васаби порционное 5гр",
+  "Вилка одноразовая в инд. уп.",
+  "Вода",
+  "Водоросли в пленке (нори для онигири)",
+  "Водоросли Нори",
+  "Газ вода Vinut гуава",
+  "Газ.Вода",
+  "Держатель для 2-х стаканов",
+  "Желе шарики виноград",
+  "Желе шарики кокос",
+  "Желе шарики сакура",
+  "Икра Macaro оранжевая",
+  "Имбирь порционный 20гр",
+  "Кабачок замороженный",
+  "Капуста пекинская",
+  "Капхолдер",
+  "Картофель по-деревенски",
+  "Картофель фри",
+  "Кетчуп Heinz, шт",
+  "Клубника сублимированная",
+  "Кокосовое желе",
+  "Контейнер для десерта круглый ПРТ-85",
+  "Контейнер для салата Buzzolls 750 мл",
+  "Контейнер для чизкейка",
+  "Контейнер СпК черный",
+  "Контейнер черный круглый 530мл",
+  "Концентрат грейпфрут-личи-роза",
+  "Концентрат груша",
+  "Концентрат кокос",
+  "Корнишоны маринованные",
+  "Коробка бум. для шримп ролл",
+  "Коробка для Вока 450 мл",
+  "Коробка под роллы 155х105х40 Buzzolls",
+  "Коробка под роллы 220х145х60 Buzzolls",
+  "Коробка под роллы Премиум Buzzolls 165*115*60",
+  "Краб ПФ",
+  "Краситель пищевой Жемчуг",
+  "Креветки для Вока ТОРПЕДО",
+  "Креветки с/отв очищенные",
+  "Крышка для стакана",
+  "Крышка на стакан для лимонада",
+  "Кунжут белый жаренный ПФ",
+  "Кунжут черный",
+  "Куриная котлета для Вока ПФ",
+  "Курица копченая (филе)",
+  "Лайм()",
+  "Лапша лагманная",
+  "Лед",
+  "Лимон",
+  "Ложка одноразовая в инд. уп.",
+  "Луковые кольца",
+  "Майонез Печагин Экстра 67%",
+  "Масло для фритюра и жарки",
+  "Масло кунжутное",
+  "Масло подсолнечное",
+  "Меланж",
+  "Мидии в раковине (шт)",
+  "Мидии отварные ПФ",
+  "Микрозелень горох",
+  "Молоко для кофе 3,2%",
+  "Молоко кокосовое",
+  "Морковь",
+  "Морковь по-корейски",
+  "Мороженое",
+  "Моти Клубника, шт",
+  "Моти Мандарин-юдзу, шт",
+  "Моти Шоколад, шт",
+  "Наггетсы куриные",
+  "Обечайка для Бенто",
+  "Обрезь тунца ПФ",
+  "Огурец ПФ",
+  "Огурец свежий",
+  "Пакет бумажный \"Buzzolls\"",
+  "Пакет крафт для Бенто 320*200*320",
+  "Пакет крафтовый 140*60*250",
+  "Палочки для еды",
+  "Паста анко",
+  "Паста Том Ям",
+  "Перец болгарский",
+  "Печенье орео/трио",
+  "Подпергамент 400*400 Buzzolls",
+  "Помидоры свежие",
+  "Помидоры Черри",
+  "Порошок Матча",
+  "Порошок Таро",
+  "Размешиватель",
+  "Редис",
+  "Репчатый лук",
+  "Рис",
+  "Салат Айсберг",
+  "Салат из водоросли чука",
+  "Салат мини шпинат",
+  "Сахар",
+  "Сахар фасованный",
+  "Сгущенное молоко",
+  "Сироп гуава",
+  "Сироп жасмин",
+  "Сироп фалернум",
+  "Сироп фейхоа",
+  "Сироп Халва",
+  "Сироп юдзу",
+  "Сливочное масло 82,5%",
+  "Смесь арбуз",
+  "Смесь виноград",
+  "Смесь темпурная Nihao",
+  "Смесь Шичими ПФ",
+  "Соевый соус порционный 50мл",
+  "Соль экстра",
+  "Соус бургер Heinz, вес",
+  "Соус д/ угря Унаги",
+  "Соус для Wok ПФ",
+  "Соус Карри, шт",
+  "Соус Кимпаб ПФ",
+  "Соус кунжутный(ореховый)",
+  "Соус Манго Чили",
+  "Соус Мицукан ПФ, шт",
+  "Соус с васаби",
+  "Соус соевый",
+  "Соус Спайси ПФ",
+  "Соус сулугуни ПФ New",
+  "Соус сырный Heinz, шт",
+  "Соус Цезарь Heinz",
+  "Соус чили слад. д/курицы",
+  "Соус Яки ПФ",
+  "Соусник 30 мл",
+  "Соусник 50 мл",
+  "Спирулина синяя",
+  "Стакан 330 мл Buzzolls",
+  "Стакан 500 мл матовый+крышка РР",
+  "Стикер \"Контроль качества\"",
+  "Стружка тунца",
+  "Сухари панировочные",
+  "Сухарики пшеничные 10гр шт",
+  "Сыр пармезан",
+  "Сыр Сулугуни тертый ПФ",
+  "Сыр Творожный",
+  "Сыр Чизбургер",
+  "Такуан редька",
+  "Тапиока коричневая",
+  "Тарталетка карамельно-ореховая, шт",
+  "Тарталетка Малиновая, шт",
+  "Торт Молочная девочка, шт",
+  "Тортилья пшеничная",
+  "Трубочка д/коктейля прозрачная 12 х 240мм",
+  "Трубочка черная",
+  "Угорь для онигири ПФ",
+  "Угорь обрезь ПФ",
+  "Угорь филе ПФ",
+  "Уксус яблочный",
+  "Упаковка под фри Buzzolls",
+  "Упаковка ПРТ-85 для десерта",
+  "Филе тунца ПФ",
+  "Фиш соус",
+  "Форель обрезь для Поке ПФ",
+  "Форель обрезь ПФ",
+  "Форель филе ПФ",
+  "Форель черная часть ПФ",
+  "Цветы сушеные",
+  "Чай зеленый, гр",
+  "Чай черный, гр",
+  "Чеснок развесной",
+  "Чизкейк Клубничный",
+  "Чизкейк Малина, шт",
+  "Чизкейк Шоколадный",
+  "Шампиньоны",
+  "Шарики рисовые Том ям",
+];
+
+    // 🔹 القيم الثابتة للكمية المخططة
+    const fixedPlanValues = [
+  20, 1000, 1000, 2500, 150, 6000, 1000, 5000, 200, 100000,
+  400, 2000, 2000, 5000, 50, 2000, 2000, 2000, 5000, 5000,
+  1000, 2000, 100, 5000, 5000, 50, 30, 2000, 200, 200,
+  200, 200, 200, 1000, 1000, 1000, 2000, 200, 500, 10000,
+  10000, 500, 5000, 20, 6000, 10000, 1000, 500, 4000, 3000,
+  20, 30000, 500, 3000, 100000, 1000, 2000, 6000, 2000, 50000,
+  1000, 10000, 900, 175, 5000, 1000, 6000, 3000, 1000, 2000,
+  3000, 20, 20, 20, 5000, 100, 5000, 5000, 10000, 5000,
+  1000, 2000, 5000, 400, 2000, 2000, 100, 1000, 2000, 500,
+  1000, 1000, 250, 500, 1000, 150000, 2000, 1000, 600, 1000,
+  200, 2000, 1000, 1000, 1000, 1000, 1000, 1000, 400, 1000,
+  1000, 10000, 1000, 5000, 4000, 2000, 15000, 2000, 30, 1000,
+  2000, 500, 50, 5000, 2000, 2000, 10000, 50, 4000, 2000,
+  10000, 200, 200, 100, 500, 500, 2000, 1000, 10000, 100,
+  2000, 2000, 50000, 2000, 2000, 2000, 20, 20, 24, 100,
+  1000, 500, 500, 4000, 1000, 500, 1000, 100, 1000, 500,
+  500, 5000, 5000, 5000, 1000, 50, 50, 500, 12, 12,
+  12, 500, 1000
+];
+
+    // 🔁 تحويل الأرقام العربية/الشرقية إلى أرقام إنكليزية وحذف المسافات
+    function convertArabicToEnglishNumbers(str) {
+        const arabicMap = '٠١٢٣٤٥٦٧٨٩'.split('');
+        const persianMap = '۰۱۲۳۴۵۶۷۸۹'.split('');
+
+        return str
+            .replace(/\s+/g, '') // حذف المسافات
+            .replace(/[٠-٩]/g, d => arabicMap.indexOf(d)) // تحويل الأرقام العربية
+            .replace(/[۰-۹]/g, d => persianMap.indexOf(d)); // تحويل الأرقام الفارسية
+    }
+
+    // إنشاء الجدول وتعبئة البيانات
+    for (let i = 0; i < rowsCount; i++) {
+        const row = document.createElement("tr");
+
+        // 🔸 اسم المادة
+        const materialIndex = i % materialNames.length;
+        const materialCell = document.createElement("td");
+        materialCell.textContent = materialNames[materialIndex];
+        materialCell.contentEditable = false;
+
+        // 🔸 كمية فعلية
+        const factCell = document.createElement("td");
+        factCell.contentEditable = true;
+
+        // 🔸 كمية مخططة
+        const planCell = document.createElement("td");
+        planCell.contentEditable = true;
+
+        const planIndex = i % fixedPlanValues.length;
+        planCell.textContent = fixedPlanValues[planIndex];
+
+        // 🔸 الفرق
+        const diffCell = document.createElement("td");
+        diffCell.textContent = "";
+
+        row.appendChild(materialCell);
+        row.appendChild(factCell);
+        row.appendChild(planCell);
+        row.appendChild(diffCell);
+
+        tableBody.appendChild(row);
+    }
+
+    function parseExcelData() {
+        const input = document.getElementById("excelInput").value.trim();
+        const lines = input.split(/\r?\n/);
+        const data = lines.map(line => line.split("\t"));
+
+        const rows = tableBody.querySelectorAll("tr");
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll("td");
+            const materialName = cells[0].textContent.trim();
+
+            const matched = data.find(([name]) => name.trim() === materialName);
+
+            if (matched) {
+                let factValue = matched[1];
+                if (factValue !== undefined) {
+                    // ⚠️ تحويل الأرقام الشرقية والعربية
+                    factValue = convertArabicToEnglishNumbers(factValue);
+
+                    // ⚠️ حذف الفاصلة العشرية وما بعدها
+                    factValue = factValue.split(',')[0];
+
+                    // ⚠️ حذف كل شيء غير رقمي
+                    const numericValue = parseInt(factValue.replace(/[^0-9]/g, ''), 10);
+
+                    if (!isNaN(numericValue)) {
+                        cells[1].textContent = numericValue;
+                        updateDifference(cells[2], cells[1], cells[3]);
+                    }
+                }
+            }
+        });
+    }
+
+    function updateDifference(planCell, factCell, diffCell) {
+        let planText = convertArabicToEnglishNumbers(planCell.textContent);
+        let factText = convertArabicToEnglishNumbers(factCell.textContent);
+
+        planText = planText.replace(/[^0-9]/g, '');
+        factText = factText.replace(/[^0-9]/g, '');
+
+        const plan = parseInt(planText, 10) || 0;
+        const fact = parseInt(factText, 10) || 0;
+
+        const diff = plan > fact;
+        diffCell.textContent = diff;
+
+        if (diff > 0) {
+            diffCell.classList.add("negative");
+        } else {
+            diffCell.classList.remove("negative");
+        }
+    }
+
+    tableBody.addEventListener("input", function(e) {
+        if (e.target.tagName === "TD") {
+            const row = e.target.parentElement;
+            const cells = row.querySelectorAll("td");
+            if (cells[2] && cells[1] && cells[3]) {
+                updateDifference(cells[2], cells[1], cells[3]);
+            }
+        }
+    });
+</script>
 
 </body>
 </html>
